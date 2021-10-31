@@ -816,6 +816,7 @@ endif
 
 function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let [args, request] = s:extract_opts(a:args, {'mods': a:mods ==# '<mods>' ? '' : a:mods})
+  let force_wip_window_to_background = get(a:, '1', 0)
 
   if empty(args)
     let default_dispatch = 1
@@ -928,7 +929,14 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
     call writefile([], request.file)
 
     if exists(':chistory')
-      let result = s:dispatch(request)
+      if !force_wip_window_to_background
+        let result = s:dispatch(request)
+      else
+        let original_background = request.background
+        let request.background = 1
+        let result = s:dispatch(request)
+        let request.background = original_background
+      endif
     else
       let result = 0
     endif
