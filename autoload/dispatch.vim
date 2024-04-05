@@ -433,6 +433,7 @@ endfunction
 function! s:extract_opts(command, ...) abort
   let command = a:command
   let opts = {}
+  let opts.reveal_on_error = 0
   while command =~# '^\%(-\|++\)\%(\w\+\)\%([= ]\|$\)'
     let opt = matchstr(command, '\zs\w\+')
     if command =~# '^\%(-\|++\)\w\+='
@@ -442,6 +443,8 @@ function! s:extract_opts(command, ...) abort
     endif
     if opt ==# 'dir' || opt ==# 'directory'
       let opts.directory = fnamemodify(expand(val), ':p:s?[^:]\zs[\\/]$??')
+    elseif opt ==# 'reveal'
+      let opts.reveal_on_error = 1
     elseif index(['compiler', 'title', 'wait'], opt) >= 0
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
     endif
@@ -827,7 +830,6 @@ endif
 
 function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let [args, request] = s:extract_opts(a:args, {'mods': a:mods ==# '<mods>' ? '' : a:mods})
-  let force_wip_window_to_background = get(a:, '1', 0)
 
   if empty(args)
     let default_dispatch = 1
@@ -945,7 +947,7 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
     call writefile([], request.file)
 
     if has('patch-8.0.1023')
-      if force_wip_window_to_background
+      if request.reveal_on_error
         let original_background = request.background
         let request.background = 1
         let result = s:dispatch(request)
