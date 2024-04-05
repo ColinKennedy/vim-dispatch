@@ -951,17 +951,6 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
       let result = 0
     endif
 
-    " if exists(':chistory')
-    "   if !force_wip_window_to_background
-    "     let result = s:dispatch(request)
-    "   else
-    "     let original_background = request.background
-    "     let request.background = 1
-    "     let result = s:dispatch(request)
-    "     let request.background = original_background
-    "   endif
-    " endif
-
     if result
       if !get(request, 'background')
         call s:cgetfile(request, '')
